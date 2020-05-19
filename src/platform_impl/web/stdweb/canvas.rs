@@ -7,7 +7,7 @@ use crate::platform_impl::{OsError, PlatformSpecificWindowBuilderAttributes};
 use std::cell::RefCell;
 use std::rc::Rc;
 use stdweb::js;
-use stdweb::traits::IPointerEvent;
+use stdweb::traits::{IEvent, IPointerEvent};
 use stdweb::unstable::TryInto;
 use stdweb::web::event::{
     BlurEvent, ConcreteEvent, FocusEvent, FullscreenChangeEvent, KeyDownEvent, KeyPressEvent,
@@ -130,6 +130,7 @@ impl Canvas {
         F: 'static + FnMut(ScanCode, Option<VirtualKeyCode>, ModifiersState),
     {
         self.on_keyboard_release = Some(self.add_user_event(move |event: KeyUpEvent| {
+            event.prevent_default();
             handler(
                 event::scan_code(&event),
                 event::virtual_key_code(&event),
@@ -143,6 +144,7 @@ impl Canvas {
         F: 'static + FnMut(ScanCode, Option<VirtualKeyCode>, ModifiersState),
     {
         self.on_keyboard_press = Some(self.add_user_event(move |event: KeyDownEvent| {
+            event.prevent_default();
             handler(
                 event::scan_code(&event),
                 event::virtual_key_code(&event),
@@ -161,6 +163,7 @@ impl Canvas {
         // viable/compatible alternative as of now. `beforeinput` is still widely
         // unsupported.
         self.on_received_character = Some(self.add_user_event(move |event: KeyPressEvent| {
+            event.prevent_default();
             handler(event::codepoint(&event));
         }));
     }
@@ -228,6 +231,7 @@ impl Canvas {
         F: 'static + FnMut(i32, MouseScrollDelta, ModifiersState),
     {
         self.on_mouse_wheel = Some(self.add_event(move |event: MouseWheelEvent| {
+            event.prevent_default();
             if let Some(delta) = event::mouse_scroll_delta(&event) {
                 handler(0, delta, event::mouse_modifiers(&event));
             }
